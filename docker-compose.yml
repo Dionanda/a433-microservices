@@ -1,0 +1,45 @@
+# Menggunakan Docker Compose versi 3.9
+version: "3.8"
+
+services:
+  item-db:
+    # Nama kontainer untuk service item-db
+    container_name: item-db
+    # Image yang akan digunakan, menggunakan versi 3 dari mongo
+    image: mongo:3
+    # Port yang akan di-expose dari kontainer (host_port:container_port)
+    ports:
+      - "27020:27017"
+    # Network yang akan digunakan
+    networks:
+      - item-app-net
+    # Volume yang akan digunakan untuk menyimpan data kontainer
+    volumes:
+      - "app-db:/data/db"
+    # Selalu restart jika terhenti
+    restart: always
+  item-app:
+    # Nama kontainer untuk service item-app
+    container_name: item-app
+    # Image yang akan digunakan, menggunakan versi v1 dari ghcr.io/dionanda/item-app
+    image: ghcr.io/dionanda/item-app:v1
+    # Port yang akan di-expose dari kontainer (host_port:container_port)
+    ports: 
+      - "80:8080"
+    # Network yang akan digunakan
+    networks: 
+      - item-app-net
+    # Service item-app akan bergantung pada service item-db
+    depends_on:
+      - item-db
+    # Selalu restart jika terhenti
+    restart: always
+volumes:
+  # Volume yang akan digunakan untuk menyimpan data kontainer item-db
+  app-db:
+    name: app-db
+networks:
+  # Nama network yang akan digunakan untuk menghubungkan service
+  item-app-net:
+    name: item-app-net
+    driver: bridge
